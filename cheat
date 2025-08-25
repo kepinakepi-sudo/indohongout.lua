@@ -1,49 +1,66 @@
--- Indo Hangout V2.2 (Auto Fish, Copy Ava, Teleport Player [Dropdown], Voice FX, Noclip, Infinite Jump)
+-- Indo Hangout V3 (GUI Rapi + Auto Fish, Copy Ava, Teleport, Voice FX, Noclip, Infinite Jump, Fly)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
--- GUI utama
+---------------------------------------------------
+-- GUI Utama
+---------------------------------------------------
 local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 local Frame = Instance.new("Frame", ScreenGui)
-Frame.Size = UDim2.new(0, 280, 0, 480)
-Frame.Position = UDim2.new(0.05, 0, 0.3, 0)
-Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Frame.Size = UDim2.new(0, 320, 0, 500)
+Frame.Position = UDim2.new(0.05, 0, 0.25, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BorderSizePixel = 0
 Frame.Active = true
 Frame.Draggable = true
-Frame.BorderSizePixel = 0
 
-local Title = Instance.new("TextLabel", Frame)
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "Indo Hangout V2.2"
-Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+local TitleBar = Instance.new("Frame", Frame)
+TitleBar.Size = UDim2.new(1, 0, 0, 45)
+TitleBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+
+local Title = Instance.new("TextLabel", TitleBar)
+Title.Size = UDim2.new(1, -10, 1, 0)
+Title.Position = UDim2.new(0, 5, 0, 0)
+Title.Text = "🌴 Indo Hangout V3"
 Title.Font = Enum.Font.GothamBold
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextScaled = true
-Title.BorderSizePixel = 0
+Title.BackgroundTransparency = 1
 
-local ContentFrame = Instance.new("Frame", Frame)
-ContentFrame.Size = UDim2.new(1, 0, 1, -40)
-ContentFrame.Position = UDim2.new(0, 0, 0, 40)
-ContentFrame.BackgroundTransparency = 1
+local Content = Instance.new("Frame", Frame)
+Content.Size = UDim2.new(1, 0, 1, -45)
+Content.Position = UDim2.new(0, 0, 0, 45)
+Content.BackgroundTransparency = 1
 
--- Fungsi buat tombol
+---------------------------------------------------
+-- Fungsi tombol dengan hover animasi
+---------------------------------------------------
 local function makeButton(text, yPos)
-    local btn = Instance.new("TextButton", ContentFrame)
+    local btn = Instance.new("TextButton", Content)
     btn.Size = UDim2.new(1, -20, 0, 40)
     btn.Position = UDim2.new(0, 10, 0, yPos)
     btn.Text = text
-    btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.Gotham
     btn.TextScaled = true
     btn.BorderSizePixel = 0
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(100, 100, 100)}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 70, 70)}):Play()
+    end)
+
     return btn
 end
 
 ---------------------------------------------------
--- 1. Auto Fish 🎣
+-- 1. Auto Fish
 ---------------------------------------------------
 local autoFish = false
 local function doFish()
@@ -62,120 +79,109 @@ local function doFish()
     end
 end
 
-local fishBtn = makeButton("Toggle Auto Fish", 10)
+local fishBtn = makeButton("🎣 Toggle Auto Fish", 10)
 fishBtn.MouseButton1Click:Connect(function()
     autoFish = not autoFish
     if autoFish then
-        print("🎣 Auto Fish ON")
         task.spawn(doFish)
-    else
-        print("❌ Auto Fish OFF")
     end
 end)
 
 ---------------------------------------------------
--- 2 & 3. Dropdown Player + Copy Ava + Teleport
+-- 2. Copy Avatar + Teleport (Dropdown Player)
 ---------------------------------------------------
-local selectedPlayer = nil
-local dropdownFrame = Instance.new("ScrollingFrame", ContentFrame)
-dropdownFrame.Size = UDim2.new(1, -20, 0, 100)
-dropdownFrame.Position = UDim2.new(0, 10, 0, 60)
-dropdownFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-dropdownFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-dropdownFrame.BorderSizePixel = 0
-dropdownFrame.ScrollBarThickness = 6
+local selectedPlayer
+local dropFrame = Instance.new("ScrollingFrame", Content)
+dropFrame.Size = UDim2.new(1, -20, 0, 100)
+dropFrame.Position = UDim2.new(0, 10, 0, 60)
+dropFrame.CanvasSize = UDim2.new(0,0,0,0)
+dropFrame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+dropFrame.BorderSizePixel = 0
+dropFrame.ScrollBarThickness = 4
 
 local function refreshDropdown()
-    dropdownFrame:ClearAllChildren()
+    dropFrame:ClearAllChildren()
     local y = 0
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= player then
-            local btn = Instance.new("TextButton", dropdownFrame)
-            btn.Size = UDim2.new(1, -4, 0, 30)
-            btn.Position = UDim2.new(0, 2, 0, y)
+            local btn = Instance.new("TextButton", dropFrame)
+            btn.Size = UDim2.new(1,-4,0,30)
+            btn.Position = UDim2.new(0,2,0,y)
             btn.Text = p.Name
-            btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-            btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+            btn.TextColor3 = Color3.fromRGB(255,255,255)
             btn.Font = Enum.Font.Gotham
             btn.TextScaled = true
             btn.BorderSizePixel = 0
             btn.MouseButton1Click:Connect(function()
                 selectedPlayer = p
-                print("📌 Selected Player: " .. p.Name)
+                print("📌 Selected: " .. p.Name)
             end)
             y = y + 32
         end
     end
-    dropdownFrame.CanvasSize = UDim2.new(0, 0, 0, y)
+    dropFrame.CanvasSize = UDim2.new(0,0,0,y)
 end
 refreshDropdown()
 Players.PlayerAdded:Connect(refreshDropdown)
 Players.PlayerRemoving:Connect(refreshDropdown)
 
-local copyBtn = makeButton("Copy Selected Avatar", 170)
+local copyBtn = makeButton("👕 Copy Avatar", 170)
 copyBtn.MouseButton1Click:Connect(function()
     if selectedPlayer then
         local desc = Players:GetHumanoidDescriptionFromUserId(selectedPlayer.UserId)
         player.Character.Humanoid:ApplyDescription(desc)
-        print("👕 Avatar copied from " .. selectedPlayer.Name)
-    else
-        print("❌ Select a player first")
     end
 end)
 
-local tpBtn = makeButton("Teleport to Player", 220)
+local tpBtn = makeButton("📍 Teleport to Player", 220)
 tpBtn.MouseButton1Click:Connect(function()
     if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
         player.Character:MoveTo(selectedPlayer.Character.HumanoidRootPart.Position + Vector3.new(2,0,2))
-        print("📍 Teleported to " .. selectedPlayer.Name)
-    else
-        print("❌ Select a player first")
     end
 end)
 
 ---------------------------------------------------
--- 4. Fake Voice FX 🎤
+-- 3. Voice FX
 ---------------------------------------------------
-local pitchUp = false
-local voiceBtn = makeButton("Toggle Fake Voice FX", 270)
+local pitch = false
+local voiceBtn = makeButton("🎤 Toggle Voice FX", 270)
 voiceBtn.MouseButton1Click:Connect(function()
-    pitchUp = not pitchUp
+    pitch = not pitch
     for _, sound in ipairs(workspace:GetDescendants()) do
         if sound:IsA("Sound") then
-            sound.PlaybackSpeed = pitchUp and 1.5 or 1
+            sound.PlaybackSpeed = pitch and 1.5 or 1
         end
     end
-    print("🎤 Voice FX: " .. (pitchUp and "Chipmunk" or "Normal"))
 end)
 
 ---------------------------------------------------
--- 5. Noclip 🚪
+-- 4. Noclip
 ---------------------------------------------------
 local noclip = false
-local noclipBtn = makeButton("Toggle Noclip", 320)
+local noclipBtn = makeButton("🚪 Toggle Noclip", 320)
 noclipBtn.MouseButton1Click:Connect(function()
     noclip = not noclip
-    print("🚪 Noclip " .. (noclip and "ON" or "OFF"))
 end)
 
-game:GetService("RunService").Stepped:Connect(function()
+RunService.Stepped:Connect(function()
     if noclip and player.Character then
         for _, part in ipairs(player.Character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
+                part.Transparency = 0.5
             end
         end
     end
 end)
 
 ---------------------------------------------------
--- 6. Infinite Jump 🦘
+-- 5. Infinite Jump
 ---------------------------------------------------
 local infJump = false
-local infJumpBtn = makeButton("Toggle Infinite Jump", 370)
+local infJumpBtn = makeButton("🦘 Toggle Infinite Jump", 370)
 infJumpBtn.MouseButton1Click:Connect(function()
     infJump = not infJump
-    print("🦘 Infinite Jump " .. (infJump and "ON" or "OFF"))
 end)
 
 UIS.JumpRequest:Connect(function()
@@ -185,4 +191,50 @@ UIS.JumpRequest:Connect(function()
 end)
 
 ---------------------------------------------------
-print("✅ Indo Hangout V2.2 Loaded (Auto Fish, Copy Ava, Teleport, Voice FX, Noclip, Infinite Jump)")
+-- 6. Fly
+---------------------------------------------------
+local flying = false
+local speed = 60
+local bodyVel, bodyGyro
+
+local function startFly()
+    if flying then return end
+    flying = true
+    local hrp = player.Character:WaitForChild("HumanoidRootPart")
+    bodyVel = Instance.new("BodyVelocity", hrp)
+    bodyGyro = Instance.new("BodyGyro", hrp)
+    bodyVel.MaxForce = Vector3.new(1e5,1e5,1e5)
+    bodyGyro.MaxTorque = Vector3.new(1e5,1e5,1e5)
+
+    RunService.RenderStepped:Connect(function()
+        if flying and hrp then
+            local cam = workspace.CurrentCamera.CFrame
+            local move = Vector3.new()
+            if UIS:IsKeyDown(Enum.KeyCode.W) then move += cam.LookVector end
+            if UIS:IsKeyDown(Enum.KeyCode.S) then move -= cam.LookVector end
+            if UIS:IsKeyDown(Enum.KeyCode.A) then move -= cam.RightVector end
+            if UIS:IsKeyDown(Enum.KeyCode.D) then move += cam.RightVector end
+            if UIS:IsKeyDown(Enum.KeyCode.Space) then move += Vector3.new(0,1,0) end
+            if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then move -= Vector3.new(0,1,0) end
+            bodyVel.Velocity = move.Unit * speed
+            bodyGyro.CFrame = cam
+        end
+    end)
+end
+
+local function stopFly()
+    flying = false
+    if bodyVel then bodyVel:Destroy() end
+    if bodyGyro then bodyGyro:Destroy() end
+end
+
+local flyBtn = makeButton("🛫 Toggle Fly", 420)
+flyBtn.MouseButton1Click:Connect(function()
+    if flying then
+        stopFly()
+    else
+        startFly()
+    end
+end)
+
+print("✅ Indo Hangout V3 Loaded (GUI Rapi)")
